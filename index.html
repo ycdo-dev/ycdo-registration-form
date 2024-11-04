@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ទម្រង់ចុះឈ្មោះ</title>
+    <!-- Add Google Fonts for Khmer -->
+    <link href="https://fonts.googleapis.com/css2?family=Moul&family=Hanuman:wght@100;300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1><u>ទម្រង់ចុះឈ្មោះ</u></h1>
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="name" class="required-field">ឈ្មោះពេញ</label>
+                <input type="text" id="name" name="name" required placeholder="សូមបញ្ចូលឈ្មោះពេញ">
+            </div>
+
+            <div class="form-group">
+                <label for="gender" class="required-field">ភេទ</label>
+                <select id="gender" name="gender" required>
+                    <option value="">ជ្រើសរើសភេទ</option>
+                    <option value="ប្រុស">ប្រុស</option>
+                    <option value="ស្រី">ស្រី</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="phone" class="required-field">លេខទូរស័ព្ទ</label>
+                <input type="tel" id="phone" name="phone" required placeholder="សូមបញ្ចូលលេខទូរស័ព្ទ">
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="optional-field">អ៊ីមែល</label>
+                <input type="email" id="email" name="email" placeholder="អ៊ីមែល(ដាក់ក៏បាន អត់ក៏បាន)">
+            </div>
+
+            <div class="form-group">
+                <label for="address" class="required-field">អាសយដ្ឋាន</label>
+                <input type="text" id="address" name="address" required placeholder="សូមបញ្ចូលអាសយដ្ឋាន">
+            </div>
+
+            <button type="submit">ដាក់ស្នើ</button>
+        </form>
+        <div id="successMessage" class="success-message">ការចុះឈ្មោះបានជោគជ័យ!</div>
+        <div id="errorMessage" class="error-message">មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។</div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
