@@ -39,7 +39,7 @@ h1::after {
     transform: translateX(-50%);
     width: 100px;
     height: 4px;
-    background: linear-gradient(90deg, #3498db, #2ecc71);
+    background: #0C5DEF;
     border-radius: 2px;
 }
 
@@ -74,7 +74,7 @@ input:focus, select:focus {
 button {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(90deg, #3498db, #2ecc71);
+    background: linear-gradient(240deg, #52B8FF, #0C5DEF);
     color: white;
     border: none;
     border-radius: 8px;
