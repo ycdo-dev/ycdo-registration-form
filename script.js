@@ -1,18 +1,26 @@
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDyJdKzSPpUeAgs1ni5dJD7DviblX2E2B4",
-  authDomain: "ycdo---registration-form.firebaseapp.com",
-  projectId: "ycdo---registration-form",
-  storageBucket: "ycdo---registration-form.firebasestorage.app",
-  messagingSenderId: "632743367139",
-  appId: "1:632743367139:web:d4f4cdc81329e0925cd0d6",
-  measurementId: "G-1NWJ10FCQG"
+    apiKey: "AIzaSyDyJdKzSPpUeAgs1ni5dJD7DviblX2E2B4",
+    authDomain: "ycdo---registration-form.firebaseapp.com",
+    projectId: "ycdo---registration-form",
+    storageBucket: "ycdo---registration-form.firebasestorage.app",
+    messagingSenderId: "632743367139",
+    appId: "1:632743367139:web:d4f4cdc81329e0925cd0d6",
+    measurementId: "G-1NWJ10FCQG"
 };
 
-// ចាប់ផ្តើម Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// Initialize Firebase
+let db;
+try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    console.log('Firebase initialized successfully');
+} catch (error) {
+    console.error('Error initializing Firebase:', error);
+    showError();
+}
 
+// Get DOM elements
 const form = document.getElementById('registrationForm');
 const successMessage = document.getElementById('successMessage');
 const errorMessage = document.getElementById('errorMessage');
@@ -20,107 +28,160 @@ const modal = document.getElementById('qrModal');
 const closeButton = document.querySelector('.close-button');
 const downloadButton = document.getElementById('downloadQR');
 
-// បិទ modal នៅពេលចុច X ឬចុចក្រៅ modal
-closeButton.onclick = function() {
-    modal.style.display = "none";
-}
+// Hide messages initially
+successMessage.style.display = 'none';
+errorMessage.style.display = 'none';
 
-window.onclick = function(event) {
-    if (event.target == modal) {
-        modal.style.display = "none";
+// Form validation
+function validateForm(formData) {
+    if (!formData.name || formData.name.trim() === '') {
+        throw new Error('សូមបញ្ចូលឈ្មោះ');
+    }
+    if (!formData.gender) {
+        throw new Error('សូមជ្រើសរើសភេទ');
+    }
+    if (!formData.phone || !/^[0-9+\-\s]*$/.test(formData.phone)) {
+        throw new Error('សូមបញ្ចូលលេខទូរស័ព្ទត្រឹមត្រូវ');
+    }
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        throw new Error('សូមបញ្ចូលអ៊ីមែលត្រឹមត្រូវ');
+    }
+    if (!formData.address || formData.address.trim() === '') {
+        throw new Error('សូមបញ្ចូលអាសយដ្ឋាន');
     }
 }
 
-// បង្កើត ID តែមួយគត់
-function generateUniqueId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
-// បង្កើត QR Code
-function createQRCode(data) {
-    const qrcodeContainer = document.getElementById('qrcode');
-    if (!qrcodeContainer) {
-        console.error('QR code container not found');
-        return;
-    }
-    
-    qrcodeContainer.innerHTML = ''; // សម្អាត QR code ចាស់
+// Handle form submission
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
     
     try {
-        // បង្កើត object ថ្មីដែលមានតែព័ត៌មានសំខាន់ៗ
-        const qrData = {
-            id: data.id,
-            name: data.name,
-            phone: data.phone,
-            documentId: data.documentId
+        // Get form data
+        const formData = {
+            name: form.name.value,
+            gender: form.gender.value,
+            phone: form.phone.value,
+            email: form.email.value || '',
+            address: form.address.value,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            status: 'បានចុះឈ្មោះ'
         };
+
+        // Validate form data
+        validateForm(formData);
+
+        // Add to Firestore
+        const docRef = await db.collection('registrations').add(formData);
         
-        console.log('QR Data:', qrData); // Log QR data
+        // Create QR code data
+        const qrData = {
+            documentId: docRef.id,
+            name: formData.name,
+            phone: formData.phone
+        };
+
+        // Convert to JSON and encode for Khmer support
+        const qrDataString = encodeURIComponent(JSON.stringify(qrData));
         
-        // បង្កើត QR code
-        new QRCode(qrcodeContainer, {
-            text: JSON.stringify(qrData),
-            width: 200,
-            height: 200,
+        // Generate QR code
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = ''; // Clear previous QR code
+        
+        new QRCode(qrContainer, {
+            text: decodeURIComponent(qrDataString),
+            width: 256,
+            height: 256,
             colorDark: "#000000",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
         });
 
-        if (downloadButton) {
-            downloadButton.onclick = function() {
-                const canvas = qrcodeContainer.querySelector('canvas');
-                if (canvas) {
-                    const image = canvas.toDataURL("image/png");
-                    const link = document.createElement('a');
-                    link.download = `qr-code-${data.name}.png`;
-                    link.href = image;
-                    link.click();
-                }
-            }
-        }
+        // Show success message and modal
+        showSuccess();
+        showModal();
+        form.reset();
 
-        // បង្ហាញ modal
-        if (modal) {
-            modal.style.display = "block";
-        }
+        // Setup download button
+        setupDownloadButton(qrContainer);
+
     } catch (error) {
-        console.error('Error creating QR code:', error);
+        console.error('Error:', error);
+        showError(error.message);
     }
+});
+
+// Handle phone number input
+document.getElementById('phone').addEventListener('input', function(e) {
+    // Remove any non-numeric characters except + and -
+    let value = e.target.value.replace(/[^\d+\-]/g, '');
+    e.target.value = value;
+});
+
+// Setup download functionality
+function setupDownloadButton(qrContainer) {
+    downloadButton.onclick = () => {
+        const qrImage = qrContainer.querySelector('img');
+        if (qrImage) {
+            const link = document.createElement('a');
+            link.download = 'qr-code.png';
+            link.href = qrImage.src;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
 }
 
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    data.id = generateUniqueId();
-    data.timestamp = new Date().toISOString();
-    
-    try {
-        // រក្សាទុកទិន្នន័យទៅក្នុង Firebase
-        const docRef = await db.collection('registrations').add(data);
-        console.log('Document written with ID:', docRef.id);
-        
-        // បន្ថែម document ID ទៅក្នុងទិន្នន័យសម្រាប់ QR code
-        data.documentId = docRef.id;
-        
-        // បង្កើតនិងបង្ហាញ QR code មុនពេល reset form
-        createQRCode(data);
-        
-        form.reset();
-        successMessage.style.display = 'block';
-        errorMessage.style.display = 'none';
-        setTimeout(() => {
-            successMessage.style.display = 'none';
-        }, 3000);
-        
-    } catch (error) {
-        console.error('Error adding document:', error);
-        errorMessage.style.display = 'block';
+// Modal functions
+function showModal() {
+    modal.style.display = 'block';
+}
+
+function hideModal() {
+    modal.style.display = 'none';
+}
+
+// Success/Error message functions
+function showSuccess() {
+    successMessage.style.display = 'block';
+    setTimeout(() => {
         successMessage.style.display = 'none';
-        setTimeout(() => {
-            errorMessage.style.display = 'none';
-        }, 3000);
+    }, 3000);
+}
+
+function showError(message = 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។') {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+    setTimeout(() => {
+        errorMessage.style.display = 'none';
+    }, 3000);
+}
+
+// Event Listeners for modal
+closeButton.onclick = hideModal;
+
+window.onclick = (event) => {
+    if (event.target === modal) {
+        hideModal();
     }
+};
+
+// Form input handlers
+const inputs = form.querySelectorAll('input, select');
+inputs.forEach(input => {
+    input.addEventListener('input', () => {
+        if (input.value.trim() !== '') {
+            input.classList.add('has-value');
+        } else {
+            input.classList.remove('has-value');
+        }
+    });
+});
+
+// Initialize tooltips or any other UI components
+document.addEventListener('DOMContentLoaded', () => {
+    // Hide messages on page load
+    successMessage.style.display = 'none';
+    errorMessage.style.display = 'none';
+    modal.style.display = 'none';
 });
