@@ -1,12 +1,12 @@
-// Firebase Configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyDyJdKzSPpUeAgs1ni5dJD7DviblX2E2B4",
-    authDomain: "ycdo---registration-form.firebaseapp.com",
-    projectId: "ycdo---registration-form",
-    storageBucket: "ycdo---registration-form.firebasestorage.app",
-    messagingSenderId: "632743367139",
-    appId: "1:632743367139:web:d4f4cdc81329e0925cd0d6",
-    measurementId: "G-1NWJ10FCQG"
+  apiKey: "AIzaSyDyJdKzSPpUeAgs1ni5dJD7DviblX2E2B4",
+  authDomain: "ycdo---registration-form.firebaseapp.com",
+  projectId: "ycdo---registration-form",
+  storageBucket: "ycdo---registration-form.firebasestorage.app",
+  messagingSenderId: "632743367139",
+  appId: "1:632743367139:web:d4f4cdc81329e0925cd0d6",
+  measurementId: "G-1NWJ10FCQG"
 };
 
 // Initialize Firebase
